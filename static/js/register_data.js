@@ -16,7 +16,7 @@ const db = new sqlite3.Database('./users.db');
 
 // 创建一个简单的表格（如果数据库中不存在）
 db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, password TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT ,email TEXT, password TEXT)");
 });
 
 // 处理前端表单提交的 POST 请求
