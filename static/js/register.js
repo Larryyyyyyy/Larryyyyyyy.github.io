@@ -1,4 +1,4 @@
-const inputID=document.getElementById('inputID1');
+const inputID=document.getElementById('inputUsername1');
 const inputEmail=document.getElementById('inputE-mail2');
 const inputPassword=document.getElementById('inputPassword2');
 let legal;
