@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Larry's garden</title>
+	  <!--css引入-->
+    <link href="static\plugins\bootstrap-5.3.3-dist\css\bootstrap.min.css" rel="stylesheet"></link>
+	  <!--script引入-->
+	  <script src="static\plugins\bootstrap-5.3.3-dist\js\bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"></link>
+	  <link href="static\css\mainpage.css" rel="stylesheet"></link>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+      body {
+        background-color: #121212;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+      }
+      .player {
+        position: fixed;
+        bottom: -100px; /* Initially hidden */
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        padding: 15px;
+        border-radius: 10px;
+        transition: bottom 0.3s ease;
+      }
+      .player.active {
+        bottom: 0;
+      }
+      .player .control-button {
+        color: white;
+        border: none;
+        background: transparent;
+      }
+      .player .control-button:hover {
+        color: #f39c12;
+      }
+    </style>
+  </head>
+  <!--主体部分-->
+  <body>
+	  <!--主体内容-->
+    <div class="stars"></div>
+    <!--导航栏-->
+	  <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Larry的小花园</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">首页</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="chat.html">聊天</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">资源</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="advanced_programing.html">高等程序设计A</a></li>
+                <li><a class="dropdown-item" href="computer_basic.html">计算机系统基础</a></li>
+                <li><a class="dropdown-item" href="data_structure.html">数据结构A</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">更多...</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">游戏</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="pac_man.html">吃豆人</a></li>
+                <li><a class="dropdown-item" href="2048.html">2048</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">更多...</a></li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" aria-disabled="true"></a>
+            </li>
+          </ul>
+          <form class="d-flex ms-auto" role="search">
+            <input class="form-control me-2" type="search" placeholder="搜索" aria-label="search"></input>
+            <button class="btn btn-outline-success me-3" type="submit">
+			        <img src="static\img\search.svg" alt="Search" style="width: 20px; height: 20px; background-color: dark">
+			      </button>
+          </form>
+		      <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">登录</button>
+          <div class="modal fade" id="loginModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" data-bs-theme="dark">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="loginModalLabel">登录</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+      				<form id="loginInformation">
+				        <div class="mb-3">
+                  <label for="inputEmail1" class="form-label">&nbsp&nbsp&nbsp Email address</label>
+                  <input type="email" class="form-control" id="inputEmail1" name="inputEmail1" placeholder="请输入你的电子邮箱" required></input>
+                </div>
+  				      <label for="inputPassword1" class="form-label">&nbsp&nbsp&nbsp Password</label>
+				        <input type="password" id="inputPassword1" name="inputPassword1" class="form-control" placeholder="请输入你的密码" aria-describedby="passwordHelpBlock" required></input>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-outline-light" id="loginConfirm">确认</button>
+                  <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                </div>
+				      </form>
+				      <script>
+                // 监听表单提交事件
+                document.getElementById('loginInformation').addEventListener('submit', function(e) {
+                  e.preventDefault();  // 防止页面刷新
+
+                  const formData = new FormData(this);
+                  const formObject = {};
+                  formData.forEach((value, key) => {
+                    formObject[key] = value;
+                  });
+
+                  // 使用 fetch 将数据发送到后端
+                  fetch('http://localhost:3000/submit', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject),
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log('成功:', data);
+                  })
+                  .catch(error => {
+                    console.error('错误:', error);
+                  });
+                });
+              </script>
+            </div>
+          </div>
+        </div>
+        <script src="static\js\login.js" rel="stylesheet"></script>
+		    <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#registerModal">注册</button>
+          <div class="modal fade" id="registerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true" data-bs-theme="dark">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="registerModalLabel">注册</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+				        <form id="registerInformation">
+				          <label for="inputUsername1" class="form-label">&nbsp&nbsp&nbsp ID</label>
+				          <input type="Username1" id="inputUsername1" name="inputUsername1" class="form-control" placeholder="请输入你的名称" aria-describedby="IDHelpBlock" required></input>
+                  <label for="inputEmail2" class="form-label">&nbsp&nbsp&nbsp Email address</label>
+                  <input type="email" class="form-control" id="inputEmail2" name="inputEmail2" placeholder="请输入你的电子邮箱" required></input>
+				          <label for="inputPassword2" class="form-label">&nbsp&nbsp&nbsp Password</label>
+				          <input type="password" id="inputPassword2" name="inputPassword2" class="form-control" placeholder="请输入你的密码" aria-describedby="passwordHelpBlock" required></input>
+        				  <div id="passwordHelpBlock" class="form-text">&nbsp&nbsp&nbsp你的密码没有什么严格要求，能用就好</div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-outline-light" id="registerConfirm">确认</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                  </div>
+			          </form>
+				        <script>
+                  // 监听表单提交事件
+                  document.getElementById('registerInformation').addEventListener('submit', function(e) {
+                    e.preventDefault();  // 防止页面刷新
+
+                    const formData = new FormData(this);
+                    const formObject = {};
+                    formData.forEach((value, key) => {
+                      formObject[key] = value;
+                    });
+
+                    // 使用 fetch 将数据发送到后端
+                    fetch('http://localhost:3000/submit', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formObject),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                      console.log('成功:', data);
+                    })
+                    .catch(error => {
+                      console.error('错误:', error);
+                    });
+                  });
+                </script>
+              </div>
+            </div>
+          </div>
+          <script src="static\js\register.js" rel="stylesheet"></script>
+        </div>
+      </div>
+    </nav>
+    <!--折叠面板-->
+    <div class="accordion" id="accordionMain">
+      <!--外部手风琴1-->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionMain_1" aria-expanded="true" aria-controls="accordionMain_1">网站更新日志</button>
+        </h2>
+        <div id="accordionMain_1" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionMain">
+          <!--嵌套手风琴1-->
+	        <div class="accordion-body">
+            <div class="accordion" id="accordionLog">
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionLog_5" aria-expanded="true" aria-controls="accordionLog_5">2025.05.28</button>
+                </h2>
+                <div id="accordionLog_5" class="accordion-collapse collapse" data-bs-parent="#accordionLog">
+                  <div class="accordion-body">
+                    <strong>完成了资源界面笔记的更新</strong>
+		                <ul>
+             				  <li>资源-三个科目的笔记</li>
+				              <ul>
+          		  	  		<li>用网上的帮助显示markdown语法的库，比较好地将通过typora编辑的笔记方在html中</li>
+					              <li>复制粘贴了很多“星星”</li>
+  	  				          <li>增添了搜索框</li>
+				              </ul>
+				            </ul>
+                  </div>
+                </div>
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionLog_4" aria-expanded="true" aria-controls="accordionLog_4">2025.01.01</button>
+                </h2>
+                <div id="accordionLog_4" class="accordion-collapse collapse" data-bs-parent="#accordionLog">
+                  <div class="accordion-body">
+                    <strong>node.js的简单部署，登录和注册的后端数据传输。</strong>
+		                <ul>
+             				  <li>node.js</li>
+				              <ul>
+          		  	  		<li>不知道什么问题，在调用npm install指令时将npm改为cnpm即可安装成功</li>
+					              <li>安装了express,sqlite3,body-parser和cors</li>
+  	  				          <li>其中cors的似乎是为了解决跨域问题，具体不了解</li>
+	  	  			          <li>实现了将登录注册数据传入表格</li>
+				    	          <li>考虑实现回传，尽可能达到真实的登录注册效果</li>
+				              </ul>
+				            </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionLog_3" aria-expanded="false" aria-controls="accordionLog_3">2024.12.31</button>
+                </h2>
+                <div id="accordionLog_3" class="accordion-collapse collapse" data-bs-parent="#accordionLog">
+                  <div class="accordion-body">
+                    <strong>登录和注册的前端验证。</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionLog_2" aria-expanded="false" aria-controls="accordionLog_2">2024.12.29</button>
+                </h2>
+                <div id="accordionLog_2" class="accordion-collapse collapse" data-bs-parent="#accordionLog">
+                  <div class="accordion-body">
+                    <strong>完成了部分音乐控件。</strong>
+		                <ul>
+				              <li>播放器</li>
+          				    <ul>
+  					            <li>上一首、暂停、播放、下一首</li>
+	  				            <li>歌曲名字</li>
+		  	            		<li>歌曲进度条</li>
+			              		<li>音量</li>
+		              			<li>音量图片切换</li>
+			              		<li>下拉框</li>
+				              </ul>
+				            </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionLog_1" aria-expanded="false" aria-controls="accordionLog_1">2024.12.27</button>
+                </h2>
+                <div id="accordionLog_1" class="accordion-collapse collapse" data-bs-parent="#accordionLog">
+                  <div class="accordion-body">
+                    <strong>通过<tt>Bootstarp</tt>完成了主页部分搭建。</strong>
+		                <ul>
+				              <li>导航栏</li>
+            				  <ul>
+				                <li>标题</li>
+              					<li>首页</li>
+					              <li>聊天</li>
+					              <li>资源（下拉栏）</li>
+                        <li>搜索栏及搜索框</li>
+                        <li>登录</li>
+                        <li>注册</li>
+                      </ul>
+                        <li>登录界面</li>
+                        <li>注册界面</li>
+                        <li>手风琴及嵌套手风琴</li>
+                        <li>星空背景</li>
+                        <li>轮播框（未启用）</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--嵌套手风琴1结束-->
+        </div>
+      </div>
+      <!--外部手风琴项2-->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTwo">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionMain_2" aria-expanded="false" aria-controls="accordionDiary_2">日记</button>
+        </h2>
+        <div id="accordionMain_2" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionMain">
+          <!--嵌套手风琴2-->
+	        <div class="accordion-body">
+            <div class="accordion" id="accordionDiary">
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionDiary_4" aria-expanded="false" aria-controls="accordionDiary_4">2025.05.28</button>
+                </h2>
+                <div id="accordionDiary_4" class="accordion-collapse collapse" data-bs-parent="#accordionDiary">
+                  <div class="accordion-body">
+                    <strong>大家好啊!</strong>
+                    <br>
+        		    距离上次更新网站已经过去快6个月了，到了学期末才想起来这件事呢。
+					<br>
+                    不过正好，可以借此机会对这个学期做总结：
+                    <br>
+					事情要从2月11号开始，在没要理由报备提前返校被辅导员训斥了一顿后，终于心安理得地在学校住下。
+					<br>
+					2月12号扛火车去西安过情人节。
+					<br>
+					开学之后，得益于看过真理元素的二维码介绍视频，萌发了做一个二维码生成器的程序的想法。花了2周时间，比较好地完成了项目。
+					<br>
+					科普二维码的视频：<a href="https://www.youtube.com/watch?v=w5ebcowAJD8">I built a QR code with my bare hands to see how it works</a>
+					<br>
+					项目地址：<a href="https://github.com/Larryyyyyyy/QRcode_generator">QRcode_generator</a>
+					<br>
+					接下来是数据结构A的免修考试，考试题目出得极其抽象：T1是归并排序，T2本质是一个NP问题，想不明白考的必要，T3是一个简单树形DP，而且疑似其中一个数据点出锅，T4考的是摩尔投票算法（和数据结构什么关系？）。
+					<br>
+					侥幸以95分通过，很幸运的是，可以和两位ACM队友一同免修，于是把周五晚上HDU比赛时间作为比赛训练。
+					<br>
+					一周后便是蔡导谈话，聊了些学习生活的事儿，建议让我先找找兴趣在哪，再出发，至于竞赛的事情无需看的太重。
+					<br>
+					少了一节课后实在难耐无聊，在挑战杯群联系了一个水院博士生，想着能不能一同做一个滑坡模拟的项目，便看了相关的视频。
+					<br>
+					学院安排的学业导师<strong>辛奇</strong>是软工的，自己似乎对他的方向感兴趣，但看了论文之后依然觉得乏味。
+					<br>
+					这些都不是自己感兴趣的。
+					<br>
+					上述的事儿通通婉拒了，3月8号扛高铁去西安过妇女节。
+					<br>
+					3月9号晚上还在火车上呢，因为一些事儿大吵了一架。第n次深刻地感觉到自己不会说话...
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionDiary_3" aria-expanded="false" aria-controls="accordionDiary_3">2024.12.31</button>
+                </h2>
+                <div id="accordionDiary_3" class="accordion-collapse collapse" data-bs-parent="#accordionDiary">
+                  <div class="accordion-body">
+                    <strong>大家好啊!</strong>
+        		        元旦快乐!
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionDiary_2" aria-expanded="false" aria-controls="accordionDiary_2">2024.12.16</button>
+                </h2>
+                <div id="accordionDiary_2" class="accordion-collapse collapse" data-bs-parent="#accordionDiary">
+                  <div class="accordion-body">
+                    <strong>终于通过github学生认证，并由此申请了自己的第一个域名:</strong>
+		                <a href="http://larryyyyyyy.me">http://larryyyyyyy.me</a>
+		                <br></br>
+  		              <strong>指北：</strong>
+        		        <br></br>
+		                在拥有自己的github账号后，将学校给学生的专属电子邮箱与账号绑定。
+		                <br></br>
+		                例如：
+		                <a href="https://email.whu.edu.cn/">https://email.whu.edu.cn/</a>
+                  </div>
+                </div>
+              </div>
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionDiary_1" aria-expanded="false" aria-controls="accordionDiary_1">2024.12.12</button>
+                </h2>
+                <div id="accordionDiary_1" class="accordion-collapse collapse" data-bs-parent="#accordionDiary">
+                  <div class="accordion-body">
+                    <strong>尝试提交github学生认证。</strong>
+		                <br></br>
+        		        无果。
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--嵌套手风琴2结束-->
+        </div>
+      </div>
+    </div>
+    <!--音乐播放-->
+    <div class="player" id="audioPlayer">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <button class="control-button" id="previousBtn">
+            <i class="fas fa-backward"></i>
+          </button>
+          <button class="control-button" id="playPauseBtn">
+            <i class="fas fa-play"></i>
+          </button>
+          <button class="control-button" id="nextBtn">
+            <i class="fas fa-forward"></i>
+          </button>
+          <span id="currentSong" class="ml-3">sasakure.UK - uzumakinoharu.mp3</span>
+        </div>
+      </div>
+	    <div id="progressBarControl">
+        <img class="music_img" src="static\img\music.ico" width="30" height="30" alt="" id="music_img"></img>
+        <input id="progressBar" type="range" min="0" max="100" step="0.1" value="0"></input>
+	    </div>
+      <div id="volumeControl">
+        <img class="volume_img" src="static\img\volume-up.svg" width="30" height="30" alt="" id="volume_img"></img>
+        <input id="progressBar_volume" type="range" id="volume" min="0" max="1" step="0.01" value="1" onchange="setVolume(this.value)"></input>
+      </div>
+      <audio id="audio">
+        <source src="./static/audio/sasakure.UK - uzumakinoharu.mp3" type="audio/mp3"></source>
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+    <script src="static\js\audio.js" rel="stylesheet"></script>
+  </body>
+</html>

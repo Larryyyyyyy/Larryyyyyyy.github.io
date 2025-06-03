@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Larry's garden</title>
+	<link href="static\css\mainpage.css" rel="stylesheet"></link>
+    <link href="static\plugins\bootstrap-5.3.3-dist\css\bootstrap.min.css" rel="stylesheet"></link>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"></link>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	<script src="static\plugins\bootstrap-5.3.3-dist\js\bootstrap.bundle.min.js"></script>
+    <style>
+        @media (max-width: 767px) { body { padding: 15px; } }
+        :root {
+            --bs-body-bg: #1a1a1a;
+            --bs-body-color: #e0e0e0;
+            --bs-card-bg: #2d2d2d;
+            --bs-border-color: #444;
+        }
+        body { 
+            box-sizing: border-box;
+            margin: 0 auto;
+            color: black;
+        }
+        .text-muted {
+            color: #bbb7b7 !important;
+            opacity: 0.8;
+        }
+        ::placeholder {
+            color: #918d8d !important;
+        }
+        :-ms-input-placeholder {
+            color: #918d8d !important; /* IE兼容 */
+        }
+        ::-ms-input-placeholder {
+            color: #918d8d !important; /* Edge兼容 */
+        }
+        html, body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .player {
+            position: fixed;
+            bottom: -100px;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            transition: bottom 0.3s ease;
+        }
+        .player.active {
+            bottom: 0;
+        }
+        .player .control-button {
+            color: white;
+            border: none;
+            background: transparent;
+        }
+        .player .control-button:hover {
+            color: #f39c12;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="stars"></div>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark" style="width: -100px;">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Larry的小花园</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="index.html">首页</a>
+                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">聊天</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">资源</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="advanced_programing.html">高等程序设计A</a></li>
+                            <li><a class="dropdown-item" href="computer_basic.html">计算机系统基础</a></li>
+                            <li><a class="dropdown-item" href="data_structure.html">数据结构A</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">更多...</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">游戏</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="pac_man.html">吃豆人</a></li>
+                            <li><a class="dropdown-item" href="2048.html">2048</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">更多...</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" aria-disabled="true"></a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- 评论展示容器 -->
+         <div class="container" style="max-width: 800px; padding: 20px;">
+            <div id="comments-container"></div>
+            <!-- 评论输入框 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">发表评论</h5>
+                    <form id="comment-form">
+                        <input type="text" id="comment-username" class="form-control mb-2" placeholder="您的昵称" required></input>
+                        <div class="mb-3">
+                            <textarea id="comment-text" class="form-control" rows="3" placeholder="写下您的评论..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-secondary me-2">发送</button>
+                    </form>
+                </div>
+            </div>
+            <!-- 引入 Supabase -->
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+            <script>
+                const SUPABASE_URL = 'https://iuywungpuuxkdjlnkhge.supabase.co';
+                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1eXd1bmdwdXV4a2RqbG5raGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NzMwNjAsImV4cCI6MjA2NDQ0OTA2MH0.m7Sm50pXOYFB9vgHz0XlBhzu75HvT7kLX64UUD6C6Ts';
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                // 提交评论
+                document.getElementById('comment-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const text = document.getElementById('comment-text').value.trim();
+                    const username = document.getElementById('comment-username').value.trim();
+                    if (!text || !username) return;
+                    const { error } = await supabaseClient
+                    .from('ChatRoom')
+                    .insert([{ username, message: text }]);
+                    if (error) {
+                        alert('提交失败！');
+                        console.error(error);
+                    }
+                    else {
+                        document.getElementById('comment-form').reset();
+                        loadComments();
+                    }
+                });
+                // 加载评论并展示
+                async function loadComments() {
+                    const { data, error } = await supabaseClient
+                    .from('ChatRoom')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                    if (error) return console.error('加载失败', error);
+                    const container = document.getElementById('comments-container');
+                    container.innerHTML = '';
+                    data.forEach(({ username, message, created_at }) => {
+                        const date = new Date(created_at)
+                        const timeAgo = new Date(date.getTime() + 8 * 60 * 60 * 1000).toLocaleString(); // 北京时间
+                        const rand = Math.floor(Math.random() * 21) + 1;
+                        const commentHtml = `
+                        <div class="card mb-4 rounded-3 shadow-sm">
+                            <div class="card-body d-flex">
+                                <img src="./static/img/${rand}.jpg" class="rounded-circle me-3" width="40" height="40" alt="用户头像">
+                                <div>
+                                    <h6 class="mb-1">${username} <small class="text-muted">· ${timeAgo}</small></h6>
+                                    <p class="mb-1">${message}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += commentHtml;
+                    });
+                }
+                // 初次加载
+                loadComments();
+            </script>
+        </div>
+        <br></br>
+        <br></br>
+        <div class="player" id="audioPlayer">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <button class="control-button" id="previousBtn">
+            <i class="fas fa-backward"></i>
+          </button>
+          <button class="control-button" id="playPauseBtn">
+            <i class="fas fa-play"></i>
+          </button>
+          <button class="control-button" id="nextBtn">
+            <i class="fas fa-forward"></i>
+          </button>
+          <span id="currentSong" class="ml-3">sasakure.UK - uzumakinoharu.mp3</span>
+        </div>
+      </div>
+	    <div id="progressBarControl">
+        <img class="music_img" src="static\img\music.ico" width="30" height="30" alt="" id="music_img"></img>
+        <input id="progressBar" type="range" min="0" max="100" step="0.1" value="0"></input>
+	    </div>
+      <div id="volumeControl">
+        <img class="volume_img" src="static\img\volume-up.svg" width="30" height="30" alt="" id="volume_img"></img>
+        <input id="progressBar_volume" type="range" id="volume" min="0" max="1" step="0.01" value="1" onchange="setVolume(this.value)"></input>
+      </div>
+      <audio id="audio">
+        <source src="./static/audio/sasakure.UK - uzumakinoharu.mp3" type="audio/mp3"></source>
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+    <script src="static\js\audio.js" rel="stylesheet"></script>
+    </body>
+</html>

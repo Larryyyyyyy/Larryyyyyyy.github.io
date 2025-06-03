@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Larry's garden</title>
+    	<link href="static\css\mainpage.css" rel="stylesheet"></link>
+        <link href="static\plugins\bootstrap-5.3.3-dist\css\bootstrap.min.css" rel="stylesheet"></link>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"></link>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-dark.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	    <script src="static\plugins\bootstrap-5.3.3-dist\js\bootstrap.bundle.min.js"></script>
+    </head>
+<!-- 评论输入框 -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">发表评论</h5>
+    <form id="comment-form">
+      <div class="mb-3">
+        <textarea id="comment-text" class="form-control" rows="3" placeholder="写下你的评论..." required></textarea>
+      </div>
+      <input type="text" id="comment-username" class="form-control mb-2" placeholder="你的昵称" required>
+      <button type="submit" class="btn btn-primary">发送</button>
+    </form>
+  </div>
+</div>
+
+<!-- 评论展示容器 -->
+<div id="comments-container"></div>
+
+<!-- 引入 Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://iuywungpuuxkdjlnkhge.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1eXd1bmdwdXV4a2RqbG5raGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4NzMwNjAsImV4cCI6MjA2NDQ0OTA2MH0.m7Sm50pXOYFB9vgHz0XlBhzu75HvT7kLX64UUD6C6Ts';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 提交评论
+  document.getElementById('comment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = document.getElementById('comment-text').value.trim();
+    const username = document.getElementById('comment-username').value.trim();
+
+    if (!text || !username) return;
+
+    const { error } = await supabaseClient
+      .from('Messages')
+      .insert([{ username, message: text }]);
+
+    if (error) {
+      alert('提交失败！');
+      console.error(error);
+    } else {
+      document.getElementById('comment-form').reset();
+      loadComments();
+    }
+  });
+
+  // 加载评论并展示
+  async function loadComments() {
+    const { data, error } = await supabaseClient
+      .from('Messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return console.error('加载失败', error);
+
+    const container = document.getElementById('comments-container');
+    container.innerHTML = '';
+    data.forEach(({ username, message, created_at }) => {
+      const date = new Date(created_at)
+      const timeAgo = new Date(date.getTime() + 8 * 60 * 60 * 1000).toLocaleString(); // 北京时间
+      const commentHtml = `
+        <div class="card mb-3">
+          <div class="card-body d-flex">
+            <img src="https://via.placeholder.com/50" class="rounded-circle me-3" alt="用户头像">
+            <div>
+              <h6 class="mb-1">${username} <small class="text-muted">· ${timeAgo}</small></h6>
+              <p class="mb-1">${message}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += commentHtml;
+    });
+  }
+
+  // 初次加载
+  loadComments();
+</script>
+
+</html>

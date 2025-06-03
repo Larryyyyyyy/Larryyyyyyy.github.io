@@ -1,0 +1,15 @@
+{
+    "name": "node-app",
+    "version": "1.0.0",
+    "main": "register_data.js",
+    "scripts": {
+      "start": "register_data.js"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "sqlite3": "^5.1.6",
+      "body-parser": "^1.20.2",
+      "cors": "^2.8.5"
+    }
+  }
+  
