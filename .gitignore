@@ -9,3 +9,6 @@ static/res/probability_theory_and_mathematical_statistics
 static/res/structure
 static/res/university_physics_experiment
 static/res/university_physicsB2
+*.exe
+*.out
+4.md
